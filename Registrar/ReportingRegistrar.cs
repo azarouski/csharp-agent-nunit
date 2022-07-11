@@ -19,7 +19,7 @@ namespace ZebrunnerAgent.Registrar
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private const string DefaultJobUrl = "http://localhost:8080/job/unavailable";
         private const string DefaultParentJobUrl = "http://localhost:8080/job/unavailable/parent";
-        internal static ReportingRegistrar Instance { get; } = new ReportingRegistrar();
+        internal static ReportingRegistrar Instance;
 
         private static readonly Dictionary<TestStatus, string> TestStatusToReason = new Dictionary<TestStatus, string>
         {
@@ -39,6 +39,15 @@ namespace ZebrunnerAgent.Registrar
             Log("Custom Zebrunner NLog target was registered successfully");
         }
 
+        public static ReportingRegistrar GetInstance()
+        {
+            if (Instance == null) {
+                RerunResolver.Resolve();
+                Instance = new ReportingRegistrar();
+            }
+            return Instance;
+        }
+
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void RegisterTestRunStart(AttributeTargets attributeTarget)
         {
@@ -46,7 +55,8 @@ namespace ZebrunnerAgent.Registrar
             {
                 Log($"Registering test run start...");
                 var startTestRunRequest = new StartTestRunRequest
-                {
+                {   
+                    Uuid = RerunResolver.CiRunId,
                     Name = GetSuiteName(attributeTarget),
                     Framework = "nunit",
                     StartedAt = DateTime.UtcNow,

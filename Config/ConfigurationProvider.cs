@@ -13,5 +13,7 @@
         string GetEnvironment();
 
         string GetBuild();
+
+        string GetRunContext();
     }
 }

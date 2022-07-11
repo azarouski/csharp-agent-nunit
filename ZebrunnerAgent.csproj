@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="packages\NUnit.3.13.1\build\NUnit.props" Condition="Exists('packages\NUnit.3.13.1\build\NUnit.props')" />
-  <Import Project="packages\Costura.Fody.3.3.2\build\Costura.Fody.props" Condition="Exists('packages\Costura.Fody.3.3.2\build\Costura.Fody.props')" />
+  <Import Project="packages\NUnit.3.13.3\build\NUnit.props" Condition="Exists('packages\NUnit.3.13.3\build\NUnit.props')" />
+  <Import Project="packages\Costura.Fody.5.7.0\build\Costura.Fody.props" Condition="Exists('packages\Costura.Fody.5.7.0\build\Costura.Fody.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -41,30 +41,29 @@
     </StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Costura, Version=3.3.2.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
-      <HintPath>packages\Costura.Fody.3.3.2\lib\net40\Costura.dll</HintPath>
+    <Reference Include="Costura, Version=5.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Costura.Fody.5.7.0\lib\netstandard1.0\Costura.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
       <HintPath>packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>packages\NLog.4.4.12\lib\net45\NLog.dll</HintPath>
+    <Reference Include="NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>packages\NLog.5.0.1\lib\net46\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=3.13.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb">
-      <HintPath>packages\NUnit.3.13.1\lib\net45\nunit.framework.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="nunit.framework, Version=3.13.3.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>packages\NUnit.3.13.3\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp, Version=106.11.7.0, Culture=neutral, PublicKeyToken=598062e77f915f75">
-      <HintPath>packages\RestSharp.106.11.7\lib\net452\RestSharp.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="RestSharp, Version=106.15.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
+      <HintPath>packages\RestSharp.106.15.0\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp.Serializers.NewtonsoftJson, Version=106.11.7.0, Culture=neutral, PublicKeyToken=598062e77f915f75">
-      <HintPath>packages\RestSharp.Serializers.NewtonsoftJson.106.11.7\lib\net452\RestSharp.Serializers.NewtonsoftJson.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="RestSharp.Serializers.NewtonsoftJson, Version=106.15.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
+      <HintPath>packages\RestSharp.Serializers.NewtonsoftJson.106.15.0\lib\net452\RestSharp.Serializers.NewtonsoftJson.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
@@ -91,6 +90,7 @@
     <Compile Include="Client\Requests\UpdateTestSessionRequest.cs" />
     <Compile Include="Client\Requests\StartTestRequest.cs" />
     <Compile Include="Client\Requests\StartTestRunRequest.cs" />
+    <Compile Include="Client\Responses\ExchangeRunContextResponse.cs" />
     <Compile Include="Client\Responses\SaveTestSessionResponse.cs" />
     <Compile Include="Client\Responses\RefreshAccessTokenResponse.cs" />
     <Compile Include="Client\Responses\SaveTestRunResponse.cs" />
@@ -110,6 +110,7 @@
     <Compile Include="Registrar\MaintainerResolver.cs" />
     <Compile Include="Registrar\NoOpTestRunRegistrar.cs" />
     <Compile Include="Registrar\NoOpTestSessionRegistrar.cs" />
+    <Compile Include="Registrar\RerunResolver.cs" />
     <Compile Include="Registrar\RunContext.cs" />
     <Compile Include="Registrar\ReportingRegistrar.cs" />
     <Compile Include="Registrar\Screenshot.cs" />
@@ -136,9 +137,13 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\Fody.3.3.5\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Fody.3.3.5\build\Fody.targets'))" />
-    <Error Condition="!Exists('packages\Costura.Fody.3.3.2\build\Costura.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Costura.Fody.3.3.2\build\Costura.Fody.props'))" />
-    <Error Condition="!Exists('packages\NUnit.3.13.1\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\NUnit.3.13.1\build\NUnit.props'))" />
+    <Error Condition="!Exists('packages\Fody.6.6.3\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Fody.6.6.3\build\Fody.targets'))" />
+    <Error Condition="!Exists('packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets'))" />
+    <Error Condition="!Exists('packages\Costura.Fody.5.7.0\build\Costura.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Costura.Fody.5.7.0\build\Costura.Fody.props'))" />
+    <Error Condition="!Exists('packages\Costura.Fody.5.7.0\build\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Costura.Fody.5.7.0\build\Costura.Fody.targets'))" />
+    <Error Condition="!Exists('packages\NUnit.3.13.3\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\NUnit.3.13.3\build\NUnit.props'))" />
   </Target>
-  <Import Project="packages\Fody.3.3.5\build\Fody.targets" Condition="Exists('packages\Fody.3.3.5\build\Fody.targets')" />
+  <Import Project="packages\Fody.6.6.3\build\Fody.targets" Condition="Exists('packages\Fody.6.6.3\build\Fody.targets')" />
+  <Import Project="packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
+  <Import Project="packages\Costura.Fody.5.7.0\build\Costura.Fody.targets" Condition="Exists('packages\Costura.Fody.5.7.0\build\Costura.Fody.targets')" />
 </Project>

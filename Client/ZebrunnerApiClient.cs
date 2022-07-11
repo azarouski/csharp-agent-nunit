@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Newtonsoft.Json;
 using NLog;
 using RestSharp;
 using RestSharp.Authenticators;
@@ -45,7 +46,25 @@ namespace ZebrunnerAgent.Client
         {
             return "/api/reporting" + resourceUri;
         }
-
+        
+        public ExchangeRunContextResponse RerunTest(string rerunConditions)
+        {
+            var request = new RestRequest(Reporting("/v1/run-context-exchanges"), DataFormat.Json);
+            dynamic body = JsonConvert.DeserializeObject(rerunConditions);
+            if (body != null)
+            {
+                request.AddJsonBody(body);
+            }
+            
+            var response = _restClient.Post<ExchangeRunContextResponse>(request);
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                return response.Data;
+            }
+            
+            throw new Exception($"Could not get tests by ci run id. {response.Content}");
+        }
+        
         public SaveTestRunResponse RegisterTestRunStart(StartTestRunRequest requestBody)
         {
             var request = new RestRequest(Reporting("/v1/test-runs"), DataFormat.Json);

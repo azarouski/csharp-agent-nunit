@@ -50,5 +50,10 @@ namespace ZebrunnerAgent.Config
                 .Select(propertyResolver)
                 .FirstOrDefault(property => property != null && property.Trim().Length != 0);
         }
+        
+        internal static string GetRunContext()
+        {
+            return GetStringProperty(provider => provider.GetRunContext());
+        }
     }
 }
